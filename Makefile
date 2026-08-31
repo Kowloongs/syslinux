@@ -144,10 +144,9 @@ MODULES = memdisk/memdisk \
 	com32/lib/*.c32 com32/libutil/*.c32 com32/gpllib/*.c32 \
 	com32/elflink/ldlinux/*.c32 com32/cmenu/libmenu/*.c32
 else
-# FIXME: Prune other BIOS-centric modules
+# com32/Makefile excludes BIOS-centric from EFI builds, so do not list them here.
 MODULES = com32/menu/*.c32 com32/modules/*.c32 com32/mboot/*.c32 \
-	com32/hdt/*.c32 com32/rosh/*.c32 com32/gfxboot/*.c32 \
-	com32/sysdump/*.c32 com32/lua/src/*.c32 com32/chain/*.c32 \
+	com32/rosh/*.c32 com32/lua/src/*.c32 \
 	com32/lib/*.c32 com32/libutil/*.c32 com32/gpllib/*.c32 \
 	com32/cmenu/libmenu/*.c32 com32/elflink/ldlinux/$(LDLINUX)
 endif
@@ -160,6 +159,8 @@ INSTALLABLE_MODULES = $(MODULES)
 # syslinux.exe is BTARGET so as to not require everyone to have the
 # mingw suite installed
 BTARGET  = version.gen version.h $(OBJDIR)/version.mk
+
+ifeq ($(FWCLASS),BIOS)
 BOBJECTS = $(BTARGET) \
 	mbr/*.bin \
 	core/pxelinux.0 core/lpxelinux.0 \
@@ -168,6 +169,12 @@ BOBJECTS = $(BTARGET) \
 	win32/syslinux.exe win64/syslinux64.exe \
 	dosutil/*.com dosutil/*.sys \
 	$(MODULES)
+else
+BOBJECTS = $(BTARGET) \
+	mbr/*.bin \
+	efi/syslinux.efi \
+	$(MODULES)
+endif
 
 # BSUBDIRs build the on-target binary components.
 # ISUBDIRs build the installer (host) components.
@@ -277,9 +284,9 @@ efi64:
 
 else # FIRMWARE
 
-all: all-local subdirs
+all: all-local
 
-all-local: $(BTARGET) $(ITARGET)
+all-local: $(BTARGET) $(ITARGET) subdirs
 	-ls -l $(BOBJECTS) $(IOBJECTS)
 subdirs: $(BSUBDIRS) $(ISUBDIRS)
 
