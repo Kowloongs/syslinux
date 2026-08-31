@@ -8,6 +8,7 @@ core = $(topdir)/core
 # gnuefi sets up architecture specifics in ia32 or x86_64 sub directories
 # set up the LIBDIR and EFIINC for building for the appropriate architecture
 GCCOPT := $(call gcc_ok,-fno-stack-protector,)
+GCCOPT += $(call gcc_ok,-fcommon,)
 EFIINC = $(objdir)/include/efi
 LIBDIR  = $(objdir)/lib
 
@@ -37,7 +38,7 @@ CRT0 := $(LIBDIR)/crt0-efi-$(EFI_SUBARCH).o
 LDSCRIPT := $(LIBDIR)/elf_$(EFI_SUBARCH)_efi.lds
 
 LDFLAGS = -T $(SRC)/$(ARCH)/syslinux.ld -Bsymbolic -pie -nostdlib -znocombreloc \
-		-L$(LIBDIR) --hash-style=gnu -m elf_$(ARCH) $(CRT0) -E
+		-znoseparate-code -L$(LIBDIR) --hash-style=gnu -m elf_$(ARCH) $(CRT0) -E
 
 SFLAGS     = $(GCCOPT) $(GCCWARN) $(ARCHOPT) \
 	     -fomit-frame-pointer -D__COM32__ -D__FIRMWARE_$(FIRMWARE)__ \
