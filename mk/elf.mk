@@ -30,7 +30,9 @@ ifeq ($(ARCH),x86_64)
 	#let preferred-stack-boundary be default (=4)
 endif
 GCCOPT += -Os -fomit-frame-pointer
+GCCOPT += $(call gcc_ok,-fcommon,)
 GCCOPT += $(call gcc_ok,-fno-stack-protector,)
+GCCOPT += $(call gcc_ok,-fcf-protection=none,)
 GCCOPT += $(call gcc_ok,-fwrapv,)
 GCCOPT += $(call gcc_ok,-freg-struct-return,)
 GCCOPT += $(call gcc_ok,-fno-exceptions,)
@@ -67,7 +69,7 @@ GCCOPT += -mregparm=3 -DREGPARM=3
 endif
 
 SFLAGS     = $(GCCOPT) -D__COM32__ -D__FIRMWARE_$(FIRMWARE)__ 
-LDFLAGS    = -m elf_$(ARCH) -shared --hash-style=gnu -T $(com32)/lib/$(ARCH)/elf.ld --as-needed
+LDFLAGS    = -m elf_$(ARCH) -shared --hash-style=gnu -z norelro -z noseparate-code -T $(com32)/lib/$(ARCH)/elf.ld --as-needed
 LIBGCC    := $(shell $(CC) $(GCCOPT) --print-libgcc)
 
 LNXCFLAGS  = -I$(com32)/libutil/include -W -Wall -O -g -D_GNU_SOURCE

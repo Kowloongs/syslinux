@@ -38,7 +38,7 @@
  * Open a chunk of memory as if it was a file
  */
 
-const struct input_dev __file_dev;
+extern const struct input_dev __file_dev;
 
 int openmem(const void *base, size_t len, int flags)
 {

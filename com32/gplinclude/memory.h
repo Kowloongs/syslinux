@@ -37,7 +37,7 @@ struct e820entry {
     uint64_t type;		/* type of memory segment */
 } __attribute__ ((packed));
 
-const char *const e820_types[5];
+extern const char *const e820_types[5];
 
 void get_type(int, char *, int);
 void detect_memory_e820(struct e820entry *desc, int size_map, int *size_found);

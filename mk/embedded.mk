@@ -35,6 +35,7 @@ ifeq ($(ARCH),x86_64)
 	GCCOPT += $(call gcc_ok,-fPIC)
 endif
 GCCOPT    += $(call gcc_ok,-ffreestanding,)
+GCCOPT	  += $(call gcc_ok,-fcommon,)
 GCCOPT	  += $(call gcc_ok,-fno-stack-protector,)
 GCCOPT	  += $(call gcc_ok,-fwrapv,)
 GCCOPT	  += $(call gcc_ok,-freg-struct-return,)

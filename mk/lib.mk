@@ -16,6 +16,7 @@ ifeq ($(ARCH),x86_64)
 	MARCH = x86-64
 endif
 GCCOPT += $(call gcc_ok,-fno-stack-protector,)
+GCCOPT += $(call gcc_ok,-fcommon,)
 GCCOPT += $(call gcc_ok,-fwrapv,)
 GCCOPT += $(call gcc_ok,-freg-struct-return,)
 # Note -fPIE does not work with ld on x86_64, try -fPIC instead
@@ -197,7 +198,7 @@ CORELIBOBJS = \
 	sys/err_read.o sys/err_write.o sys/null_read.o			\
 	sys/stdcon_write.o						\
 	syslinux/memscan.o strrchr.o strcat.o				\
-	syslinux/debug.o						\
+	syslinux/debug.o syslinux/localboot.o				\
 	$(LIBGCC_OBJS) \
 	$(LIBENTRY_OBJS) \
 	$(LIBMODULE_OBJS)

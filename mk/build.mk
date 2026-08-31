@@ -19,7 +19,7 @@ include $(MAKEDIR)/syslinux.mk
 OPTFLAGS   = -g -Os
 INCLUDES   =
 CFLAGS     = $(WARNFLAGS) -D_FILE_OFFSET_BITS=64 \
-             $(OPTFLAGS) $(INCLUDES)
+             $(OPTFLAGS) $(INCLUDES) -fcommon
 LDFLAGS    =
 LIBS	   =
 
