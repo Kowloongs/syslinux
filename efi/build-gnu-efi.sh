@@ -39,7 +39,26 @@ cd "$objdir/gnu-efi"
 
 EFIDIR="$(readlink -f "$objdir/../gnu-efi")"
 
-make SRCDIR="$EFIDIR" TOPDIR="$EFIDIR" -f "$EFIDIR/Makefile" ARCH=$ARCH
-make SRCDIR="$EFIDIR" TOPDIR="$EFIDIR" -f "$EFIDIR/Makefile" ARCH=$ARCH PREFIX="$objdir" install
+# gnu-efi 3.0.x took SRCDIR on the make command line, but gnu-efi 4.0.x
+# re-derives SRCDIR from VPATH inside each recursive sub-make.  Passing
+# SRCDIR as a command-line variable would leak into the sub-makes and
+# override that derivation, breaking the build.  TOPDIR must point at the
+# source tree because include paths use $(TOPDIR)/inc.
+#
+# Only build and install the parts Syslinux needs (lib/inc/gnuefi).  The
+# "apps" target fails to link (hidden CopyMem symbol) and is not
+# required, so it is excluded: the build uses explicit make goals (the
+# prereqs of `all` are frozen at parse time, so a SUBDIRS override would
+# not help there), while install's recipe expands $(SUBDIRS) at run time,
+# so the command-line SUBDIRS is safe there (the sub-installs never read
+# SUBDIRS).
+make TOPDIR="$EFIDIR" -f "$EFIDIR/Makefile" ARCH=$ARCH lib inc gnuefi
+make TOPDIR="$EFIDIR" SUBDIRS="lib inc gnuefi" -f "$EFIDIR/Makefile" ARCH=$ARCH PREFIX="$objdir" install
+
+# The build generates its objects under $(TOPDIR)/$(ARCH) inside the
+# source tree and lib/ms_va_print.c from va_print.c.  Remove those so the
+# submodule working tree stays clean.
+rm -rf "$EFIDIR/$ARCH"
+rm -f "$EFIDIR/lib/ms_va_print.c"
 
 cd "$objdir/efi"
