@@ -7,6 +7,8 @@
 
 #include <syslinux/debug.h>
 
+#define DEBUG_STDIO
+
 #if !defined(DEBUG_PORT) && !defined(DEBUG_STDIO)
 # undef CORE_DEBUG
 #endif

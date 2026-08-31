@@ -3,7 +3,7 @@ GCCWARN += -Wno-clobbered
 #GCCWARN += -DDEBUG_MALLOC
 #GCCWARN += -DDEBUG_THREAD
 # GCCWARN += -DDEBUG_PORT=0x3f8 -DCORE_DEBUG=1
-GCCWARN += -DDYNAMIC_DEBUG
+#GCCWARN += -DDYNAMIC_DEBUG
 
 ## The following will enable printing ethernet/arp/ip/icmp/tcp/udp headers
 ##	in undiif.c

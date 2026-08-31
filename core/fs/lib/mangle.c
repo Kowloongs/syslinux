@@ -17,33 +17,27 @@
 void generic_mangle_name(char *dst, const char *src)
 {
     char *p = dst;
-    int i = FILENAME_MAX-1;
+    int remaining = FILENAME_MAX - 1;
 
     while (not_whitespace(*src)) {
         if (*src == '/') {
             if (src[1] == '/') {
                 src++;
-                i--;
                 continue;
             }
         }
-        i--;
+        if (remaining == 0)
+            break;
+        remaining--;
         *dst++ = *src++;
     }
 
-    while (1) {
-        if (dst == p)
+    while (dst != p) {
+        if (dst[-1] != '/' || (dst - 1) == p)
             break;
-        if (dst[-1] != '/')
-            break;
-	if ((dst[-1] == '/') && ((dst - 1) == p))
-	    break;
-
         dst--;
-        i++;
     }
 
-    i++;
-    for (; i > 0; i --)
+    while (dst < p + FILENAME_MAX)
         *dst++ = '\0';
 }

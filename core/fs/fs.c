@@ -398,8 +398,11 @@ __bss16 uint16_t SectorSize, SectorShift;
 void fs_init(const struct fs_ops **ops, void *priv)
 {
     static struct fs_info fs;	/* The actual filesystem buffer */
+    static const struct fs_ops *tried[8];
+    static int tried_shift[8];
     int blk_shift = -1;
     struct device *dev = NULL;
+    int ntries = 0;
 
     /* Default name for the root directory */
     fs.cwd_name[0] = '/';
@@ -421,14 +424,32 @@ void fs_init(const struct fs_ops **ops, void *priv)
 	}
 	/* invoke the fs-specific init code */
 	blk_shift = fs.fs_ops->fs_init(&fs);
+	if (ntries < (int)(sizeof(tried) / sizeof(tried[0]))) {
+	    tried[ntries] = fs.fs_ops;
+	    tried_shift[ntries] = blk_shift;
+	}
+	ntries++;
+	dprintf("fs_init: candidate %s returned blk_shift %d\n",
+		fs.fs_ops->fs_name, blk_shift);
 	ops++;
     }
     if (blk_shift < 0) {
-	printf("No valid file system found!\n");
+	int i;
+
+	printf("Fatal: no valid file system found\n");
+	for (i = 0; i < ntries && i < (int)(sizeof(tried) / sizeof(tried[0])); i++)
+	    printf("\t%s: %d\n", tried[i]->fs_name, tried_shift[i]);
+	/*
+	 * No way back from here: without a usable file system there is
+	 * no kernel to load and no recovery console to drop into, so
+	 * halt instead of returning into an uninitialized userland.
+	 */
 	while (1)
 		;
     }
     this_fs = &fs;
+    dprintf("fs_init: mounted %s, blk_shift %d\n",
+	    fs.fs_ops->fs_name, blk_shift);
 
     /* initialize the cache only if it wasn't already initialized
      * by the fs driver */

@@ -10,7 +10,19 @@
 #define memmove(a,b,c)	__builtin_memmove(a,b,c)
 #define memset(a,b,c)	__builtin_memset(a,b,c)
 #define strcpy(a,b)	__builtin_strcpy(a,b)
-#define strlen(a)	__builtin_strlen(a)
+
+/* __builtin_strlen() only folds compile-time constants; for runtime
+   strings at -Os it degrades to a call to an external strlen() symbol,
+   which this freestanding DOS build does not provide.  Use an inline
+   implementation instead. */
+static inline unsigned int strlen(const char *s)
+{
+    unsigned int n = 0;
+
+    while (s[n])
+	n++;
+    return n;
+}
 
 /* This only returns true or false */
 static inline int memcmp(const void *__m1, const void *__m2, unsigned int __n)

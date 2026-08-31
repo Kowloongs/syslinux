@@ -514,10 +514,12 @@ int main(int argc, char *argv[])
     if (opt.file) {
 	fdat.base = (opt.fseg << 4) + opt.foff;
 
-	if (loadfile(opt.file, &fdat.data, &fdat.size)) {
+	size_t size;
+	if (loadfile(opt.file, &fdat.data, &size)) {
 	    error("Couldn't read the boot file.");
 	    goto bail;
 	}
+	fdat.size = size;
 	if (fdat.base + fdat.size > dosmax) {
 	    error("The boot file is too big to load at this address.");
 	    goto bail;
