@@ -1271,6 +1271,7 @@ static inline void syslinux_register_efi(void)
 
 extern void init(void);
 extern const struct fs_ops vfat_fs_ops;
+extern const struct fs_ops iso_fs_ops;
 extern const struct fs_ops pxe_fs_ops;
 
 char free_high_memory[4096];
@@ -1308,6 +1309,13 @@ static void efi_setcwd(CHAR16 *dp)
 
 	*c8 = '\0';
 }
+
+/*
+ * When cdboot is true the ISO9660 volume of an El Torito CD-ROM has
+ * been mounted (see efi_cdrom_probe()); the FAT boot image is only
+ * used as a fallback in that case.
+ */
+static bool cdboot;
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *table)
 {
@@ -1351,11 +1359,28 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *table)
 		}
 
 		efi_derivative(SYSLINUX_FS_SYSLINUX);
-		ops[0] = &vfat_fs_ops;
+
+/*
+ * On a live CD the firmware only loads bootx64.efi out of the El
+ * Torito FAT boot image; the bootloader, the configuration and the
+ * kernel live on the ISO9660 filesystem of the optical media.  Ask the
+ * block layer (efi/diskio.c) for the CD-ROM handle and mount the ISO
+ * volume instead of the FAT boot image.  If no ISO9660 volume can be
+ * found, fall back to the FAT boot image as before.
+ */
+if (efi_cdrom_probe(&priv, info->DeviceHandle)) {
+	dprintf("efi_main: booting from ISO9660 CD-ROM volume\n");
+	ops[0] = &iso_fs_ops;
+	cdboot = true;
+} else {
+	dprintf("efi_main: no ISO9660 volume found, using FAT boot image\n");
+	ops[0] = &vfat_fs_ops;
+}
 	} else {
 		efi_derivative(SYSLINUX_FS_PXELINUX);
 		ops[0] = &pxe_fs_ops;
 		image_device_handle = info->DeviceHandle;
+		cdboot = false;
 	}
 
 	/* setup timer for boot menu system support */
@@ -1367,13 +1392,15 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *table)
 
 	/* TODO: once all errors are captured in efi_errno, bail out if necessary */
 
-	priv.dev_handle = info->DeviceHandle;
+	if (!cdboot) {
+		priv.dev_handle = info->DeviceHandle;
 
-	/*
-	 * Set the current working directory, which should be the
-	 * directory that syslinux.efi resides in.
-	 */
-	efi_setcwd(DevicePathToStr(info->FilePath));
+		/*
+		 * Set the current working directory, which should be the
+		 * directory that syslinux.efi resides in.
+		 */
+		efi_setcwd(DevicePathToStr(info->FilePath));
+	}
 
 	fs_init(ops, (void *)&priv);
 

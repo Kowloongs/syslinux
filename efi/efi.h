@@ -44,6 +44,11 @@ struct efi_binding {
 
 extern EFI_HANDLE image_handle, image_device_handle;
 
+/* efi/diskio.c */
+struct efi_disk_private;
+extern bool efi_cdrom_probe(struct efi_disk_private *priv,
+			    EFI_HANDLE boot_handle);
+
 struct screen_info;
 extern void setup_screen(struct screen_info *);
 
