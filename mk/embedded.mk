@@ -59,7 +59,7 @@ LD        += -m elf_$(ARCH)
 
 # Note: use += for CFLAGS and SFLAGS in case something is set in MCONFIG.local
 CFLAGS    += $(GCCOPT) -g $(GCCWARN) -Wno-sign-compare $(OPTFLAGS) $(INCLUDES)
-SFLAGS    += $(CFLAGS) -D__ASSEMBLY__
+SFLAGS    += $(CFLAGS) -D__ASSEMBLY__ -Wa,-mx86-used-note=no
 
 .SUFFIXES: .c .o .S .s .i .elf .com .bin .asm .lst .c32 .lss
 
